@@ -132,6 +132,8 @@ function preloadFrames() {
   let queueIdx = 0;
   const CONCURRENT = 6; // downloads paralelos
 
+  let heroRevealed = false; // flag para revelar o hero só uma vez
+
   function loadNext() {
     if (queueIdx >= order.length) return;
     const frameIdx = order[queueIdx++];
@@ -146,22 +148,21 @@ function preloadFrames() {
         loadingBar.style.width = (loadedCount / TOTAL_FRAMES * 100) + '%';
       }
 
-      // Assim que o frame 0 estiver pronto, exibe e revela o texto
-      if (frameIdx === 0 && loadedCount === 1) {
+      // Assim que o frame 0 estiver pronto, revela a interface
+      // (usa flag para garantir que só acontece uma vez, independente da ordem)
+      if (frameIdx === 0 && !heroRevealed) {
+        heroRevealed = true;
         resizeCanvas();
         drawFrame(0);
+        // Esconde o overlay imediatamente — não espera todos os 240 frames
+        hideLoading();
+        // Revela o hero text
         heroText?.classList.add('visible');
-        hidePlaceholder();
         scheduleFrameUpdate();
       }
 
       // Redispara update para preencher frames que faltavam
       scheduleFrameUpdate();
-
-      // Esconde loading quando todos carregarem
-      if (loadedCount === TOTAL_FRAMES) {
-        hideLoading();
-      }
 
       loadNext();
     };
